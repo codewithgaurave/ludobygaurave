@@ -1,42 +1,88 @@
 <!DOCTYPE html>
-
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Welcome to Ludo</title>
-        <link rel="icon" href="ludoFacIcon.png" type="image/png">
-        <meta name="description" content="">
-        <meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
-        name="viewport">
-        <link rel="stylesheet" href="bootstrap.min.css">
-        <link rel="stylesheet" href="index.css">
-    </head>
-    <body>
-        <div class="menuContainer">
-            <div class="container my-auto">
-                <div class="row">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Ludo — Play with friends</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
 
-                    <div class="col-sm-8 col-md-6 col-lg-5 col-xl-4 startMenu mx-auto text-center" > 
-                        <div class="menu">
-                            <h1 class="my-3 "><b>LUDO</b></h1>
-                            <img class="dice" src="diceFront.png" alt="">
-                            <h3 class="my-3 font-monospace">Select Players</h3>
-                            <div class="choosePlayers">
-                                <div class="redPlayer players" id="redPlayer"><img src="red token.png" alt="" ></div>
-                                <div class="greenPlayer players" id="greenPlayer"><img src="green token.png" alt=""></div>
-                                <div class="yellowPlayer players" id="yellowPlayer"><img src="yellow token.png" alt=""></div>
-                                <div class="bluePlayer players" id="bluePlayer"><img src="blue token.png" alt=""></div>
-                            </div>
-                            <div class="start ">
-                                <a href="#" class="btn btn-light my-3" id="play"><b>Play</b></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <script src="index.js" async defer></script>
-    </body>
+<!-- Onboarding modal (Phase 6) -->
+<div id="onboardingModal" class="onboard-modal" style="display:none;">
+  <div class="onboard-content">
+    <h1>Welcome to Ludo</h1>
+    <p>Enter your player name to continue</p>
+    <input id="onboardName" type="text" class="form-control" maxlength="20" placeholder="Your name">
+    <div id="onboardError" class="text-danger small mt-2" style="display:none;"></div>
+    <div class="mt-3 d-flex justify-content-center">
+      <button id="onboardSave" class="btn btn-primary me-2">Save &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW Clean Lobby -->
+<main class="lobby-container">
+  <section class="lobby-card">
+    <header class="lobby-header text-center">
+      <h1 class="lobby-title">LUDO</h1>
+      <p class="lobby-subtitle">Play with friends &amp; family</p>
+    </header>
+
+    <div class="lobby-body">
+      <label class="form-label small">Player name</label>
+      <input id="playerName" class="form-control mb-2" placeholder="Your name" />
+
+      <div id="playerInfo" class="small text-muted mb-2" style="display:none;">
+        Playing as: <span id="playerInfoName"></span>
+        <button id="changeNameBtn" class="btn btn-link btn-sm text-decoration-none">Change</button>
+      </div>
+
+      <label class="form-label small">Room code (optional)</label>
+      <input id="roomCode" class="form-control mb-3" placeholder="Enter room code or leave blank to create" />
+
+      <div class="d-grid gap-2">
+        <button id="createRoom" class="btn btn-success">Create Room</button>
+        <button id="joinRoom" class="btn btn-primary">Join Room</button>
+      </div>
+
+      <div class="mt-3 text-center small text-muted">
+        Note: Colors are assigned automatically by the room host.
+      </div>
+    </div>
+
+    <footer class="lobby-footer text-center small text-muted">
+      <!-- Status will be shown here by JS when needed -->
+      <div id="status" aria-live="polite"></div>
+    </footer>
+  </section>
+</main>
+
+<!-- WebSocket fallback (unchanged) -->
+<script>
+  const ws = new WebSocket("wss://ludobygaurave-pen5.onrender.com");
+  ws.onopen = () => { const s = document.getElementById('status'); if (s) s.innerText = 'Connected to server ✅'; console.log('[WS] connected'); };
+  ws.onmessage = (e) => { try { const data = JSON.parse(e.data); console.log('[WS] message', data); } catch (e) { console.log('[WS] message', e); } };
+  ws.onerror = () => { const s = document.getElementById('status'); if (s) s.innerText = 'Server connection failed ❌'; console.warn('[WS] error'); };
+</script>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+<!-- Firebase config & init -->
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/firebase-room.js"></script>
+
+<!-- Onboarding (must run before lobby handlers) -->
+<script src="js/onboarding.js"></script>
+
+<!-- Lobby logic -->
+<script src="index.js"></script>
+
+</body>
 </html>

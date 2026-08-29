@@ -1,0 +1,32 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    "rooms": {
+      "$room": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "players": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.hasChildren(['uid','name','color','online','joinedAt']) ? newData.child('uid').val() === $uid : true"
+          }
+        },
+        "actions": {
+          ".read": "auth != null",
+          ".write": "auth != null && newData.child('uid').val() === auth.uid"
+        },
+        "processedActions": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === root.child('rooms').child($room).child('hostId').val()"
+        },
+        "gameState": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === root.child('rooms').child($room).child('hostId').val()"
+        },
+        "hostId": {
+          ".write": "auth != null && (data.exists() ? auth.uid === data.val() : true) || auth.uid === root.child('rooms').child($room).child('hostId').val()"
+        }
+      }
+    }
+  }
+}

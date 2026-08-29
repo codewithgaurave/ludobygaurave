@@ -1,5 +1,61 @@
-const dices = document.getElementsByClassName('dice');
-const p1Dice = document.getElementById('p1-dice');
+// 🔥 MULTIPLAYER STATE
+let myColor = null;
+let currentTurn = null;
+let diceOutcome = 0;
+let canRoll = false;
+
+let diceOutcome = 0;
+
+ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    console.log("Server:", data);
+
+    if (data.type === "JOIN_SUCCESS") {
+        myColor = data.color;
+        console.log("You are:", myColor);
+    }
+
+    if (data.type === "GAME_READY") {
+        currentTurn = data.turn;
+        canRoll = (currentTurn === myColor);
+        updateTurnUI();
+    }
+
+    if (data.type === "DICE_RESULT") {
+        diceOutcome = data.dice;
+        showDiceFromServer(diceOutcome);
+    }
+
+    if (data.type === "NEXT_TURN") {
+        currentTurn = data.turn;
+        canRoll = (currentTurn === myColor);
+        updateTurnUI();
+    }
+
+    if (data.type === "ROOM_FULL") {
+        alert("Room full ❌");
+    }
+};
+
+// 🎲 Dice element
+const diceBtn = document.querySelector(".dice");
+
+// 🎲 Dice roll function (SERVER CONTROLLED)
+function rollDice() {
+    if (!canRoll) {
+        console.log("Not your turn");
+        return;
+    }
+
+    ws.send(JSON.stringify({
+        type: "ROLL_DICE"
+    }));
+
+    canRoll = false;
+}
+
+// 🎲 Click bind
+diceBtn.addEventListener("click", rollDice);
 const redsMoveToken = document.getElementById('redPlayerToken');
 const bluesMoveToken = document.getElementById('bluePlayerToken');
 const greensMoveToken = document.getElementById('greenPlayerToken');
@@ -75,7 +131,8 @@ let Ndice=Array.from(dices);
 let tokens = [redToken, greenToken,yellowToken, blueToken];
 
 // to start the game
-/* home.addEventListener('click',()=>{ playersMove++; gameloop(); }); */
+/* home.addEventListener('
+',()=>{ playersMove++; gameloop(); }); */
 
 //to show token on starting game and remove notPlaying tokens 
 function showingTokens(){
@@ -203,6 +260,16 @@ function rolling(playersMove){
             }
             
         });
+
+function rollDice() {
+    if (!canRoll) return;
+
+    ws.send(JSON.stringify({
+        type: "ROLL_DICE"
+    }));
+
+    canRoll = false;
+}
       
 
           // to roll the dice on click 
@@ -247,12 +314,13 @@ function clickRoll(){
         break;  
     }
     
-
         
+    function showDiceFromServer(diceValue) {
+
     setTimeout(() => {
-        const randomInt = Math.floor(Math.random() * (6 - 1 + 1)) + 1;
-        diceOutcome=randomInt;
-        /* console.log("RANDOM : DICE-VALUE :",randomInt); */
+
+        const randomInt = diceValue; // 🎯 SERVER VALUE
+
         switch(randomInt){
             case 1:
                 Ndice[playersMove-1].querySelector('#D1').classList.add('visible-dice');
@@ -273,15 +341,12 @@ function clickRoll(){
                 Ndice[playersMove-1].querySelector('#D6').classList.add('visible-dice');
             break;
         }
-        
+
         Ndice[playersMove-1].classList.remove('rolling');
 
-        tokenFloat(playersMove);
-       
-    
-    }, 500);  
-   
-   
+        tokenFloat(playersMove); // tumhara existing function
+
+    }, 500);
 }
 
 //to add floating class to tokens
@@ -294,7 +359,7 @@ function tokenFloat(playersMove){
         token.forEach(t => {
 
             
-            if(t.parentElement.classList.contains("disks")||t.parentElement.classList.contains("tokenHome")){
+            (t.parentElement.classList.contains("disks")||t.parentElement.classList.contains("tokenHome")){
                 if(t.parentElement.classList.contains("disks")){
                     if(diceOutcome==6){
                         skipMove=false;
@@ -694,15 +759,7 @@ function update(){
             playersMove=playersMove;
         }else{
             
-            //increamenting and reseting the playersMove to loop between 4 players 
-                if(playersMove===4){
-                    playersMove=1;
-                
-                }else{
-                    playersMove++;
-                    
-                }
-        }
+            
     
     //getting class of its start spot and checking if won
     let wonPlayerClass=isWon();
@@ -741,4 +798,7 @@ function update(){
    // game loop to recursevly call another player '
    
 }
+
+
+
 
